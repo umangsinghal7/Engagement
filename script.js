@@ -1,5 +1,5 @@
-// Target Wedding Date (November 24, 2026 at 7:00 PM IST)
-const weddingDate = new Date("2026-11-24T19:00:00").getTime();
+// Target Engagement Date (November 15, 2026 at 1:00 PM IST)
+const weddingDate = new Date("2026-11-15T13:00:00").getTime();
 
 // Live Countdown Timer
 function updateCountdown() {
@@ -26,49 +26,46 @@ updateCountdown();
 const audio = document.getElementById('wedding-audio');
 const audioBtn = document.getElementById('audioBtn');
 const audioIcon = document.getElementById('audio-icon');
+const musicPrompt = document.getElementById('music-prompt');
 let isPlaying = false;
 
-// Function to play audio
-function playMusic() {
+// Function to play music and hide prompt banner
+function startMusic() {
   if (!isPlaying && audio) {
     audio.play().then(() => {
       isPlaying = true;
       if (audioIcon) audioIcon.className = 'fas fa-pause';
+      if (musicPrompt) musicPrompt.style.opacity = '0';
     }).catch(err => {
-      console.log("Autoplay blocked by browser policy, waiting for user tap:", err);
+      console.log("Audio playback waiting for gesture:", err);
     });
   }
 }
 
-// 1. Try playing immediately when page loads
-window.addEventListener('load', () => {
-  playMusic();
-});
+// Play song on FIRST scroll or touch/click
+function handleFirstScroll() {
+  startMusic();
+  // Remove event listeners once triggered
+  window.removeEventListener('scroll', handleFirstScroll);
+  document.removeEventListener('click', handleFirstScroll);
+  document.removeEventListener('touchstart', handleFirstScroll);
+}
 
-// 2. Play on first user interaction (touch, tap, click, scroll) if auto-blocked
-const userInteractions = ['click', 'touchstart', 'scroll', 'keydown'];
-userInteractions.forEach(event => {
-  document.addEventListener(event, function startAudioOnInteraction() {
-    if (!isPlaying) {
-      playMusic();
-    }
-    userInteractions.forEach(e => document.removeEventListener(e, startAudioOnInteraction));
-  }, { once: true });
-});
+// Listen for first scroll, click, or touch
+window.addEventListener('scroll', handleFirstScroll, { passive: true });
+document.addEventListener('click', handleFirstScroll, { once: true });
+document.addEventListener('touchstart', handleFirstScroll, { once: true });
 
-// 3. Manual toggle button click
+// Manual Toggle Button
 if (audioBtn) {
   audioBtn.addEventListener('click', (e) => {
-    e.stopPropagation(); // prevent document listener conflict
+    e.stopPropagation();
     if (isPlaying) {
       audio.pause();
       if (audioIcon) audioIcon.className = 'fas fa-music';
       isPlaying = false;
     } else {
-      audio.play().then(() => {
-        isPlaying = true;
-        if (audioIcon) audioIcon.className = 'fas fa-pause';
-      });
+      startMusic();
     }
   });
 }
